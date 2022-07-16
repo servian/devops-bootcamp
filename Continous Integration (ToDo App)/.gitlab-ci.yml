@@ -1,0 +1,59 @@
+image: node:latest
+
+# YML Anchors
+.install-deps: &install-deps
+  - npm ci --prefix src/
+
+# Stages in Pipeline
+stages:
+  - ci-build
+  - integration-testing
+  - package
+
+# CI Build Stage
+ci-build:
+  stage: ci-build
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output/
+  script:
+    - *install-deps
+    - npm run test-lint --prefix src/
+    - npm run test-unit --prefix src/
+  artifacts:
+    when: always
+    paths: 
+      - src/test-output/junit.xml
+    reports:
+      junit: src/test-output/junit.xml
+
+# Integration Testing
+integration-test:
+  stage: integration-testing
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output/
+    JEST_JUNIT_OUTPUT_NAME: int-test.xml
+  script:
+    - *install-deps
+    - docker compose -f docker-compose-db.yml up --detach
+    - npm run test-integration --prefix src/
+    - docker compose -f docker-compose-db.yml down
+  artifacts:
+    when: always
+    paths: 
+      - src/test-output/junit.xml
+    reports:
+      junit: src/test-output/junit.xml
+
+#Package
+package:
+  stage: package
+  only:
+    refs:
+      - main
+  script:
+    - *install-deps
+    - cd src && npm pack
+  artifacts:
+    when: always
+    paths:
+      - ./src/simpletodoapp-1.0.0.tgz
