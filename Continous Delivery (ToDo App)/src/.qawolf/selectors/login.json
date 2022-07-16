@@ -1,0 +1,62 @@
+[
+ {
+  "html": {
+   "ancestors": [
+    "<li class=\"nav-item\"></li>",
+    "<ul class=\"navbar-nav ml-auto\"></ul>"
+   ],
+   "node": "<a href=\"/users/login\" class=\"nav-link\" innertext=\"Login\">                    Login                  </a>"
+  },
+  "index": 0
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form method=\"post\" action=\"/users/login\"></form>"
+   ],
+   "node": "<input type=\"email\" class=\"form-control\" name=\"email\" required=\"\"/>"
+  },
+  "index": 1
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form method=\"post\" action=\"/users/login\"></form>"
+   ],
+   "node": "<input type=\"email\" class=\"form-control\" name=\"email\" required=\"\"/>"
+  },
+  "index": 2
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form method=\"post\" action=\"/users/login\"></form>"
+   ],
+   "node": "<input type=\"email\" class=\"form-control\" name=\"email\" required=\"\"/>"
+  },
+  "index": 3
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form method=\"post\" action=\"/users/login\"></form>"
+   ],
+   "node": "<input type=\"password\" class=\"form-control\" name=\"password\" required=\"\"/>"
+  },
+  "index": 4
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<form method=\"post\" action=\"/users/login\"></form>",
+    "<div class=\"card card-body\"></div>"
+   ],
+   "node": "<button type=\"submit\" class=\"btn btn-primary\" innertext=\"Submit\">Submit</button>"
+  },
+  "index": 5
+ }
+]

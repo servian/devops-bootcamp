@@ -1,0 +1,37 @@
+{
+  "name": "simpletodoapp",
+  "version": "1.0.0",
+  "description": "Simple Todo App",
+  "main": "server.js",
+  "scripts": {
+    "start": "DB_URI=mongodb://localhost:27017/tododb SESSION_SECRET=secret node server.js",
+    "test-lint": "eslint .",
+    "test-unit": "jest --ci test/unit --coverage --forceExit --outputFile",
+    "test-integration": "DB_URI=mongodb://localhost:27017/tododb SESSION_SECRET=secret jest --ci test/integration --coverage --forceExit",
+    "test-e2e": "DB_URI=mongodb://db:27017/tododb npx jest --config={} --preset=\"@qawolf/jest-plugin\" --rootDir=.qawolf --testTimeout=60000 --runInBand --forceExit"
+  },
+  "author": "Ben Ashby",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "connect-flash": "^0.1.1",
+    "express": "^4.16.3",
+    "express-handlebars": "^5.2.1",
+    "express-session": "^1.15.6",
+    "method-override": "^2.3.10",
+    "mongoose": "^5.0.14",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "expect.js": "^0.3.1",
+    "jest": "^25.1.0",
+    "jest-junit": "^10.0.0",
+    "mockingoose": "^2.13.2",
+    "supertest": "^4.0.2"
+  }
+}

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "todo-app"
+spec:
+  selector:
+    matchLabels:
+      app: "todo-app"
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: "todo-app"
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image }}"
+          env:
+          - name: "ENV"
+            value: {{ .Values.podVars.env }}
+          - name: "DB_URL"
+            value: {{ .Values.podVars.dbHost }}
+          - name: "PORT"
+            value: "5000" 
+          ports:
+            - name: app
+              containerPort: 5000
+              protocol: TCP

@@ -1,0 +1,102 @@
+[
+ {
+  "html": {
+   "ancestors": [
+    "<li class=\"nav-item\"></li>",
+    "<ul class=\"navbar-nav ml-auto\"></ul>"
+   ],
+   "node": "<a href=\"/users/register\" class=\"nav-link\" innertext=\"Register\">                    Register                  </a>"
+  },
+  "index": 0
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"text\" class=\"form-control\" name=\"name\" value=\"\" required=\"\"/>"
+  },
+  "index": 1
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"text\" class=\"form-control\" name=\"name\" value=\"\" required=\"\"/>"
+  },
+  "index": 2
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"text\" class=\"form-control\" name=\"name\" value=\"\" required=\"\"/>"
+  },
+  "index": 3
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"email\" class=\"form-control\" name=\"email\" value=\"\" required=\"\"/>"
+  },
+  "index": 4
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"email\" class=\"form-control\" name=\"email\" value=\"\" required=\"\"/>"
+  },
+  "index": 5
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"password\" class=\"form-control\" name=\"password\" value=\"\" required=\"\"/>"
+  },
+  "index": 6
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"password\" class=\"form-control\" name=\"password\" value=\"\" required=\"\"/>"
+  },
+  "index": 7
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<div class=\"form-group\"></div>",
+    "<form action=\"/users/register\" method=\"post\"></form>"
+   ],
+   "node": "<input type=\"password\" class=\"form-control\" name=\"password2\" value=\"\" required=\"\"/>"
+  },
+  "index": 8
+ },
+ {
+  "html": {
+   "ancestors": [
+    "<form action=\"/users/register\" method=\"post\"></form>",
+    "<div class=\"card card-body\"></div>"
+   ],
+   "node": "<button type=\"submit\" class=\"btn btn-primary\" innertext=\"Submit\">Submit</button>"
+  },
+  "index": 9
+ }
+]

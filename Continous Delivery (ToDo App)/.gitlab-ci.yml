@@ -1,0 +1,106 @@
+# GLOBAL VARIABLES
+variables:
+  HELM_VERSION: 0.1.0
+
+# YML Anchors
+.install-deps: &install-deps
+  - npm ci --prefix src/
+
+.set-context: &set-context
+  - kubectl config use-context minikube
+
+# CI Build Stage
+ci-build:
+  stage: ci-build
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  script:
+    - *install-deps
+    - npm run test-lint --prefix src/
+    - npm run test-unit --prefix src/
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+
+# Integration Testing
+integration-test:
+  stage: integration-testing
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  script:
+    - *install-deps
+    - docker compose -f docker-compose-db.yml up --detach
+    - npm run test-integration --prefix src/
+    - docker compose -f docker-compose-db.yml down
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+
+#Build
+build-image:
+  stage: build-image
+  variables:
+    DOCKER_REPO: localhost:5002
+  script:
+    - cd src
+    - docker build -t $DOCKER_REPO/todo:$CI_COMMIT_SHA .
+    - docker login $DOCKER_REPO --username admin -p $dockerPass
+    - docker push $DOCKER_REPO/todo:$CI_COMMIT_SHA
+    - echo $DOCKER_REPO/todo:$CI_COMMIT_SHA > docker_image.txt
+  cache:
+    key: docker-image-name
+    paths:
+      - image/docker_image.txt
+
+#Package Helm Chart
+package-helm:
+  stage: package-helm
+  only:
+    refs:
+      - main
+  script:
+    - helm package helm/todo --app-version $CI_COMMIT_SHA --version $HELM_VERSION
+  cache:
+    key: helm-package-cache
+    paths:
+      - packages/todo-$HELM_VERSION.tgz
+
+deploy-db:
+  stage: deploy-db
+  only:
+    refs:
+      - main
+  script:
+    - *set-context
+    - helm upgrade database bitnami/mongodb -i --wait --set persistence.enabled=true,auth.enable=false -n prod
+
+deploy-app:
+  stage: deploy-app
+  only:
+    refs:
+      - main
+  script:
+    - *set-context
+    - helm upgrade todo-app packages/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat artifacts/image.txt),podVars.dbHost=database-mongodb.prod.svc.cluster.local,podVars.env=prod -n prod
+  cache:
+    key: helm-package-cache 
+    paths:
+      - packages/todo-$HELM_VERSION.tgz
+    key: docker-image-name
+    paths:
+      - image/docker_image.txt
+
+# Stages in Pipeline
+stages:
+  - ci-build
+  - integration-testing
+  - build-image
+  - package-helm
+  - deploy-db
+  - deploy-app
