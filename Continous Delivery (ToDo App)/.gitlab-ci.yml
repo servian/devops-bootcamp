@@ -6,9 +6,6 @@ variables:
 .install-deps: &install-deps
   - npm ci --prefix src/
 
-.set-context: &set-context
-  - kubectl config use-context minikube
-
 # CI Build Stage
 ci-build:
   stage: ci-build
@@ -30,6 +27,8 @@ integration-test:
   stage: integration-testing
   variables:
     JEST_JUNIT_OUTPUT_DIR: test-output
+  needs:
+    - job: ci-build
   script:
     - *install-deps
     - docker compose -f docker-compose-db.yml up --detach
@@ -44,63 +43,67 @@ integration-test:
 
 #Build
 build-image:
-  stage: build-image
+  stage: build-pack
   variables:
     DOCKER_REPO: localhost:5002
   script:
-    - cd src
-    - docker build -t $DOCKER_REPO/todo:$CI_COMMIT_SHA .
+    - docker build -t $DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA src/.
     - docker login $DOCKER_REPO --username admin -p $dockerPass
-    - docker push $DOCKER_REPO/todo:$CI_COMMIT_SHA
-    - echo $DOCKER_REPO/todo:$CI_COMMIT_SHA > docker_image.txt
-  cache:
-    key: docker-image-name
+    - docker push $DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA
+    - echo "$DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
+  artifacts:
+    when: always
     paths:
-      - image/docker_image.txt
+      - docker_image.txt
+
 
 #Package Helm Chart
 package-helm:
-  stage: package-helm
+  stage: build-pack
+  only:
+    refs:
+      - main
+  needs:
+    - job: build-image
+  script:
+    - helm package helm/todo --app-version $CI_COMMIT_SHORT_SHA --version $HELM_VERSION
+  artifacts:
+    when: always
+    paths:
+      - todo-$HELM_VERSION.tgz
+
+deploy-db-test:
+  stage: deploy-test
+  variables:
+    ENVIRONMENT: test
   only:
     refs:
       - main
   script:
-    - helm package helm/todo --app-version $CI_COMMIT_SHA --version $HELM_VERSION
-  cache:
-    key: helm-package-cache
-    paths:
-      - packages/todo-$HELM_VERSION.tgz
+    - sudo su - vagrant -c "helm upgrade database bitnami/mongodb -i --wait --set persistence.enabled=true,auth.enable=false -n $ENVIRONMENT"
 
-deploy-db:
-  stage: deploy-db
+deploy-app-test:
+  stage: deploy-test
+  variables:
+    ENVIRONMENT: test
   only:
     refs:
       - main
+  needs:
+    - job: deploy-db-test
+    - job: build-image
+    - job: package-helm
+  dependencies:
+    - build-image
+    - package-helm
   script:
-    - *set-context
-    - helm upgrade database bitnami/mongodb -i --wait --set persistence.enabled=true,auth.enable=false -n prod
-
-deploy-app:
-  stage: deploy-app
-  only:
-    refs:
-      - main
-  script:
-    - *set-context
-    - helm upgrade todo-app packages/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat artifacts/image.txt),podVars.dbHost=database-mongodb.prod.svc.cluster.local,podVars.env=prod -n prod
-  cache:
-    key: helm-package-cache 
-    paths:
-      - packages/todo-$HELM_VERSION.tgz
-    key: docker-image-name
-    paths:
-      - image/docker_image.txt
-
+    - sudo su - vagrant -c "helm upgrade todo-app ./todo-$HELM_VERSION.tgz -i --wait --set image=$(cat docker_image.txt),podVars.dbHost=database-mongodb.$ENVIRONMENT.svc.cluster.local,podVars.env=$ENVIRONEMNT -n $ENVIRONMENT"
+      
 # Stages in Pipeline
 stages:
   - ci-build
   - integration-testing
-  - build-image
+  - build-pack
   - package-helm
-  - deploy-db
-  - deploy-app
+  - deploy-test
+  - deploy-prod
