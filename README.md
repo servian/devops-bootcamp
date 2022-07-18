@@ -96,7 +96,13 @@ sudo rm /home/gitlab-runner/.bash_logout
 sudo gitlab-runner register --non-interactive --url "http://localhost:5580" --registration-token "TOKEN" --executor "shell" --description "shell-runner" --tag-list "hashiqube" --run-untagged="true" --locked="false" 
 ```
 
-Where TOKEN is the registration token ID you took down from gitlab earlier
+Where TOKEN is the registration token ID you took down from gitlab earlier.
+
+11. Forward the web port for the `gitlab-webservice`
+
+```
+kubectl port-forward -n default service/gitlab-webservice-default 80:8181 > /dev/null 2>&1 &
+```
 
 You are good to go! Enjoy the bootcamp.
 
