@@ -1,0 +1,58 @@
+# GLOBAL VARIABLES
+variables:
+  HELM_VERSION: 0.1.0
+
+# YML Anchors
+.install-deps: &install-deps
+  - npm ci --prefix src/
+
+.deploy-db: &deploy-db
+  - sudo su - vagrant -c "helm upgrade database bitnami/mongodb -i --wait --set persistence.enabled=true,auth.enable=false -n $ENVIRONMENT"
+
+.deploy-app: &deploy-app
+  - sudo su - vagrant -c "helm upgrade todo-app /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/docker_image.txt),podVars.dbHost=database-mongodb.$ENVIRONMENT.svc.cluster.local,podVars.env=$ENVIRONEMNT -n $ENVIRONMENT"
+
+# CI Build Stage
+ci-build:
+  stage: ci-build
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  script:
+    - *install-deps
+    - npm run test-lint --prefix src/
+    - npm run test-unit --prefix src/
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+
+# Integration Testing
+integration-test:
+  stage: integration-testing
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  needs:
+    - job: ci-build
+  script:
+    - *install-deps
+    - docker compose -f docker-compose-db.yml up --detach
+    - npm run test-integration --prefix src/
+    - docker compose -f docker-compose-db.yml down
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+
+
+# Stages in Pipeline
+stages:
+  - ci-build
+  - integration-testing
+  - build-pack
+  - package-helm
+  - deploy-dev
+  - deploy-prod

@@ -12,8 +12,6 @@ spec:
       labels:
         app: "todo-app"
     spec:
-      imagePullSecrets:
-        - name: regcred
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image }}"

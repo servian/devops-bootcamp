@@ -12,51 +12,69 @@ variables:
 .deploy-app: &deploy-app
   - sudo su - vagrant -c "helm upgrade todo-app /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/docker_image.txt),podVars.dbHost=database-mongodb.$ENVIRONMENT.svc.cluster.local,podVars.env=$ENVIRONEMNT -n $ENVIRONMENT"
 
-# # CI Build Stage
-# ci-build:
-#   stage: ci-build
-#   variables:
-#     JEST_JUNIT_OUTPUT_DIR: test-output
-#   script:
-#     - *install-deps
-#     - npm run test-lint --prefix src/
-#     - npm run test-unit --prefix src/
-#   artifacts:
-#     when: always
-#     paths: 
-#       - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
-#     reports:
-#       junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+# CI Build Stage
+ci-build:
+  stage: ci-build
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  script:
+    - *install-deps
+    - npm run test-lint --prefix src/
+    - npm run test-unit --prefix src/
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
 
-# # Integration Testing
-# integration-test:
-#   stage: integration-testing
-#   variables:
-#     JEST_JUNIT_OUTPUT_DIR: test-output
-#   needs:
-#     - job: ci-build
+# Integration Testing
+integration-test:
+  stage: integration-testing
+  variables:
+    JEST_JUNIT_OUTPUT_DIR: test-output
+  needs:
+    - job: ci-build
+  script:
+    - *install-deps
+    - docker compose -f docker-compose-db.yml up --detach
+    - npm run test-integration --prefix src/
+    - docker compose -f docker-compose-db.yml down
+  artifacts:
+    when: always
+    paths: 
+      - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+    reports:
+      junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+
+# #Build
+# build-image:
+#   stage: build-pack
+#   # variables:
+#   #   DOCKER_REPO: localhost:5002
 #   script:
-#     - *install-deps
-#     - docker compose -f docker-compose-db.yml up --detach
-#     - npm run test-integration --prefix src/
-#     - docker compose -f docker-compose-db.yml down
+#     - sudo echo $(sudo su - vagrant -c "minikube ip") > minikube_ip.txt
+#     - docker build -t $(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA src/.
+#     # - docker login $DOCKER_REPO_ADDR --username admin -p $dockerPass
+#     - docker push $(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA
+#     - echo "$(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
+#     # - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
 #   artifacts:
 #     when: always
-#     paths: 
-#       - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
-#     reports:
-#       junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
+#     paths:
+#       - docker_image.txt
 
 #Build
 build-image:
   stage: build-pack
   variables:
-    DOCKER_REPO: localhost:5002
+    DOCKER_REPO_ADDR: 10.9.99.10:5001
   script:
-    - docker build -t $DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA src/.
-    - docker login $DOCKER_REPO --username admin -p $dockerPass
-    - docker push $DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA
-    - echo "$DOCKER_REPO/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
+    - docker build -t $DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA src/.
+    # - docker login $DOCKER_REPO_ADDR --username admin -p $dockerPass
+    - docker push $DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA
+    - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
+    # - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
   artifacts:
     when: always
     paths:
