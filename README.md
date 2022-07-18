@@ -94,11 +94,6 @@ Where TOKEN is the registration token ID you took down from gitlab earlier
 
 You are good to go! Enjoy the bootcamp.
 
-## Support & Feedback
-For suggestions, feedback and queries please branch or and submit a Pull Request or directly contact the architects of the HashiQube via email:
-
-Lead Automation Architect [riaan.nolan@servian.com](mailto:riaan.nolan@servian.com)
-
 ## Contributors and Special mentions
 A Very special mention to contributors that gave your time
  - Riaan Nolan
