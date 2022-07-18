@@ -84,6 +84,12 @@ sudo nano /etc/hosts
 ```
 ![hosts](images/hosts.png?raw=true)
 
+11. Remove the ./bash_logout from the `gitlab-runner` user
+
+```
+sudo rm /home/gitlab-runner/.bash_logout
+```
+
 10. Set up the Gitlab Runner, by copying the following line into your terminal
 
 ```
@@ -93,6 +99,11 @@ sudo gitlab-runner register --non-interactive --url "http://localhost:5580" --re
 Where TOKEN is the registration token ID you took down from gitlab earlier
 
 You are good to go! Enjoy the bootcamp.
+
+## Support & Feedback
+For suggestions, feedback and queries please branch or and submit a Pull Request or directly contact the architects of the HashiQube via email:
+
+Lead Automation Architect [riaan.nolan@servian.com](mailto:riaan.nolan@servian.com)
 
 ## Contributors and Special mentions
 A Very special mention to contributors that gave your time
