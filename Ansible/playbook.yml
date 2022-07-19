@@ -1,0 +1,33 @@
+- name: Demo of ansible capability & scripting
+  hosts: all
+  vars:
+    name: "Siobhan"
+    title: "DevOps Bootcamp"
+    file_location: /var/www/html/index.html
+
+  tasks:
+
+    - name: Ensure apache is installed
+      become: yes
+      apt:
+        name: apache2
+        update_cache: yes
+        state: present
+
+    - name: Ensure apache is enabled
+      become: yes
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Add test page
+      become: yes
+      shell:
+        cmd: "echo \"Hello World\" > {{ file_location }}"
+
+    - name: Ensure index.html is deployed as per template
+      become: yes
+      template:
+        dest: "{{ file_location }}"
+        src: index.html.tpl

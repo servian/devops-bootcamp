@@ -13,6 +13,7 @@ There are a number of different labs included in this repo:
 * __Continous Integration:__ This folder is used as part of the Continous Integration & automated testing (Linting, Unit Tests & Integration Test) labs. It will generate a deployable artifact at the end of the pipeline. 
 * __Continous Delivery/Deployment:__ This folder is used as part of the Docker & Continous Deployment/Delivery labs and will deploy a dockerised version of the todo application into minikube which is hosted on Hashiqube. It includes a dockerfile to create a docker image of the application, helm charts to deploy the application
 * __Terraform:__ This folder includes the terraform scafolding required to write a set of terraform files that can be used with localstack.
+* __Ansible:__ This folder is used to demo Ansible and apply an ansible playbook to a provisioned ubuntu Vagrantbox. 
 
 ## Todo Application
 The application that is used for these labs is a simple NodeJS App that is backed by a MongoDB Database. For details of the application itself, please refer to the README inside the Comntinous Integration & Continous Delivery Labs. 
@@ -42,8 +43,6 @@ Once the above has been installed into Hashiqube, you will need to set up a few 
 1. In your browser, navigate to `localhost:5580` & using the root credentials provided in the output, login to your gitlab environment and create a new admin user.
 
 2. Log back in as your newly created admin user amd set up a new project (Uncheck the "Initialize repository with a README" box)
-
-3. Add the gitlab-runner user to the docker & sudo group
 
 ![hosts](images/gitlab-project.png?raw=true)
 
@@ -80,7 +79,7 @@ sudo nano /etc/sudoers
 9. Add the gitlab.localhosts to the hosts file
 
 ```
-sudo nano /etc/hosts
+sudo nano /etc/host
 ```
 ![hosts](images/hosts.png?raw=true)
 
@@ -98,7 +97,7 @@ sudo gitlab-runner register --non-interactive --url "http://localhost:5580" --re
 
 Where TOKEN is the registration token ID you took down from gitlab earlier.
 
-11. Forward the web port for the `gitlab-webservice`
+11. Forward the web port for the `gitlab-webservice` pod.
 
 ```
 kubectl port-forward -n default service/gitlab-webservice-default 80:8181 > /dev/null 2>&1 &
