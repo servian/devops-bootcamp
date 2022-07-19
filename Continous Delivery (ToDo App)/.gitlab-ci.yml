@@ -12,6 +12,15 @@ variables:
 .deploy-app: &deploy-app
   - sudo su - vagrant -c "helm upgrade todo-app /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/docker_image.txt),podVars.dbHost=database-mongodb.$ENVIRONMENT.svc.cluster.local,podVars.env=$ENVIRONEMNT -n $ENVIRONMENT"
 
+# Stages in Pipeline
+stages:
+  - ci-build
+  - integration-testing
+  - build-pack
+  - package-helm
+  - deploy-dev
+  - deploy-prod
+
 # CI Build Stage
 ci-build:
   stage: ci-build
@@ -46,106 +55,3 @@ integration-test:
       - src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
     reports:
       junit: src/$JEST_JUNIT_OUTPUT_DIR/junit.xml
-
-# #Build
-# build-image:
-#   stage: build-pack
-#   # variables:
-#   #   DOCKER_REPO: localhost:5002
-#   script:
-#     - sudo echo $(sudo su - vagrant -c "minikube ip") > minikube_ip.txt
-#     - docker build -t $(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA src/.
-#     # - docker login $DOCKER_REPO_ADDR --username admin -p $dockerPass
-#     - docker push $(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA
-#     - echo "$(cat minikube_ip.txt):5000/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
-#     # - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
-#   artifacts:
-#     when: always
-#     paths:
-#       - docker_image.txt
-
-#Build
-build-image:
-  stage: build-pack
-  variables:
-    DOCKER_REPO_ADDR: 10.9.99.10:5001
-  script:
-    - docker build -t $DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA src/.
-    # - docker login $DOCKER_REPO_ADDR --username admin -p $dockerPass
-    - docker push $DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA
-    - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
-    # - echo "$DOCKER_REPO_ADDR/todo:$CI_COMMIT_SHORT_SHA" > docker_image.txt
-  artifacts:
-    when: always
-    paths:
-      - docker_image.txt
-
-
-#Package Helm Chart
-package-helm:
-  stage: build-pack
-  needs:
-    - job: build-image
-  script:
-    - helm package helm/todo --app-version $CI_COMMIT_SHORT_SHA --version $HELM_VERSION
-  artifacts:
-    when: always
-    paths:
-      - todo-$HELM_VERSION.tgz
-
-deploy-db-dev:
-  stage: deploy-dev
-  variables:
-    ENVIRONMENT: dev
-  script:
-    - *deploy-db
-
-deploy-app-dev:
-  stage: deploy-dev
-  variables:
-    ENVIRONMENT: dev
-  needs:
-    - job: deploy-db-dev
-    - job: build-image
-    - job: package-helm
-  dependencies:
-    - build-image
-    - package-helm
-  script:
-    - *deploy-app
-
-deploy-db-prod:
-  stage: deploy-prod
-  variables:
-    ENVIRONMENT: prod
-  only:
-    refs:
-      - main
-  script:
-    - *deploy-db
-
-deploy-app-prod:
-  stage: deploy-prod
-  variables:
-    ENVIRONMENT: prod
-  only:
-    refs:
-      - main
-  needs:
-    - job: deploy-db-prod
-    - job: build-image
-    - job: package-helm
-  dependencies:
-    - build-image
-    - package-helm
-  script:
-    - *deploy-app
-
-# Stages in Pipeline
-stages:
-  - ci-build
-  - integration-testing
-  - build-pack
-  - package-helm
-  - deploy-dev
-  - deploy-prod

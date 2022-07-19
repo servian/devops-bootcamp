@@ -12,6 +12,15 @@ variables:
 .deploy-app: &deploy-app
   - sudo su - vagrant -c "helm upgrade todo-app /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/todo-$HELM_VERSION.tgz -i --wait --set image=$(cat /home/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/0/$GITLAB_USER_LOGIN/todo/docker_image.txt),podVars.dbHost=database-mongodb.$ENVIRONMENT.svc.cluster.local,podVars.env=$ENVIRONEMNT -n $ENVIRONMENT"
 
+# Stages in Pipeline
+stages:
+  - ci-build
+  - integration-testing
+  - build-pack
+  - package-helm
+  - deploy-dev
+  - deploy-prod
+
 # CI Build Stage
 ci-build:
   stage: ci-build
@@ -123,11 +132,3 @@ deploy-app-prod:
   script:
     - *deploy-app
 
-# Stages in Pipeline
-stages:
-  - ci-build
-  - integration-testing
-  - build-pack
-  - package-helm
-  - deploy-dev
-  - deploy-prod
